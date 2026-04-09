@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="AppName">Telegram</string>
-    <string name="AppNameBeta">Telegram Beta</string>
+    <string name="AppName">Nugram</string>
+    <string name="AppNameBeta">Nugram</string>
     <string name="LanguageName">English</string>
     <string name="English">English</string>
     <string name="LanguageNameInEnglish">English</string>
@@ -2422,6 +2422,13 @@
     <string name="TelegramFaq">Telegram FAQ</string>
     <string name="TelegramFeatures">Telegram Features</string>
     <string name="TelegramFeaturesUrl">https://t.me/TelegramTips</string>
+    <string name="Appearance">Appearance</string>
+    <string name="Nugram">Nugram</string>
+    <string name="NugramSettingsInfo">General, Appearance</string>
+    <string name="NugramSupportPrompt">support open-source :: don\'t dox people :: gpl-compliant</string>
+    <string name="NugramComingSoon">Coming soon</string>
+    <string name="NugramZalgoRemover">Zalgo Remover</string>
+    <string name="NugramZalgoRemoverInfo">Strip excessive combining marks from incoming text.</string>
     <string name="AddAccount">Add Account</string>
     <string name="SwitchAccountHint">"Long tap to switch accounts"</string>
     <string name="SelectAccount">Select Account</string>
@@ -2705,7 +2712,7 @@
     <string name="QRCodePermissionNoCameraWithHint">**Telegram** needs camera access so that you can scan QR codes. Tap Settings -> Permissions, and turn **Camera** on.</string>
     <string name="SetProfilePhoto">Set Profile Photo</string>
     <string name="AppUpdate">Update Telegram</string>
-    <string name="AppUpdateBeta">Update Telegram Beta</string>
+    <string name="AppUpdateBeta">Update Nugram</string>
     <string name="AppUpdateVersionAndSize">Version %1$s • %2$s</string>
     <string name="AppBetaUpdateVersion">Version %1$s (%2$s)</string>
     <string name="AppUpdateDownloading">Downloading %1$d%%...</string>

@@ -679,6 +679,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             items.add(UItem.asShadow(null));
         }
 
+        items.add(SettingCell.Factory.of(4, 0xFF111111, 0xFF3A3A3A, R.drawable.settings_nugram, getString(R.string.Nugram), getString(R.string.NugramSettingsInfo)));
         items.add(SettingCell.Factory.of(1, IconBackgroundColors.BLUE.top, IconBackgroundColors.BLUE.bottom, R.drawable.settings_account, getString(R.string.SettingsAccount), getString(R.string.SettingsAccountInfo)));
         items.add(SettingCell.Factory.of(2, IconBackgroundColors.ORANGE.top, IconBackgroundColors.ORANGE.bottom, R.drawable.settings_chat, getString(R.string.SettingsChat), getString(R.string.SettingsChatInfo)));
         items.add(SettingCell.Factory.of(3, IconBackgroundColors.GREEN.top, IconBackgroundColors.GREEN.bottom, R.drawable.settings_privacy, getString(R.string.SettingsPrivacySecurity), getString(R.string.SettingsPrivacySecurityInfo)));
@@ -785,6 +786,9 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             return;
         }
         switch (item.id) {
+            case 4:
+                presentFragment(new NugramSettingsActivity());
+                break;
             case 1:
                 presentFragment(new UserInfoActivity());
                 break;
@@ -1167,6 +1171,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             subtitleView.setTranslationX(icon == 0 ? dp(2) : 0);
 
             iconBackground.setColor(iconColorTop, iconColorBottom);
+            iconBackground.setDrawBackground(true);
             iconView.setImageResource(icon);
             titleView.setText(title);
             subtitleView.setVisibility((twoLines = !TextUtils.isEmpty(subtitle)) ? View.VISIBLE : View.GONE);
@@ -1201,17 +1206,24 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             }
 
             private boolean border;
+            private boolean drawBackground = true;
             public void setDrawBorder(boolean drawBorder) {
                 this.border = drawBorder;
+            }
+
+            public void setDrawBackground(boolean drawBackground) {
+                this.drawBackground = drawBackground;
             }
 
             @Override
             public void draw(@NonNull Canvas canvas) {
                 final float r = dp(10);
                 AndroidUtilities.rectTmp.set(getBounds());
-                matrix.reset();
-                matrix.postTranslate(AndroidUtilities.rectTmp.left, AndroidUtilities.rectTmp.top);
-                canvas.drawRoundRect(AndroidUtilities.rectTmp, r, r, paint);
+                if (drawBackground) {
+                    matrix.reset();
+                    matrix.postTranslate(AndroidUtilities.rectTmp.left, AndroidUtilities.rectTmp.top);
+                    canvas.drawRoundRect(AndroidUtilities.rectTmp, r, r, paint);
+                }
 
                 if (border) {
                     final float sw = dp(1);

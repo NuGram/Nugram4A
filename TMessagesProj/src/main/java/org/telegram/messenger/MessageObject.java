@@ -3681,7 +3681,7 @@ public class MessageObject {
         if (isFromUser()) {
             fromUser = MessagesController.getInstance(currentAccount).getUser(messageOwner.from_id.user_id);
         }
-        messageText = text;
+        messageText = AndroidUtilities.maybeRemoveZalgo(text);
         final ArrayList<TLRPC.MessageEntity> entities = getEntities();
         final TextPaint paint;
         if (getMedia(messageOwner) instanceof TLRPC.TL_messageMediaGame) {
@@ -5956,6 +5956,7 @@ public class MessageObject {
                 } else {
                     messageText = messageOwner.message;
                 }
+                messageText = AndroidUtilities.maybeRemoveZalgo(messageText);
             }
         }
 
@@ -7157,7 +7158,7 @@ public class MessageObject {
         ) {
             return;
         }
-        String text = messageOwner.message;
+        CharSequence text = messageOwner.message;
         ArrayList<TLRPC.MessageEntity> entities = messageOwner.entities;
         boolean forceManualEntities = false;
         if (type == TYPE_STORY) {
@@ -7191,6 +7192,7 @@ public class MessageObject {
             captionSummarized = false;
             captionTranslated = false;
         }
+        text = AndroidUtilities.maybeRemoveZalgo(text);
         if (!isMediaEmpty() && !(getMedia(messageOwner) instanceof TLRPC.TL_messageMediaGame) && !TextUtils.isEmpty(text)) {
             caption = Emoji.replaceEmoji(text, Theme.chat_msgTextPaint.getFontMetricsInt(), false);
             caption = replaceAnimatedEmoji(caption, entities, Theme.chat_msgTextPaint.getFontMetricsInt(), false);
