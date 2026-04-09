@@ -2429,6 +2429,11 @@
     <string name="NugramComingSoon">Coming soon</string>
     <string name="NugramZalgoRemover">Zalgo Remover</string>
     <string name="NugramZalgoRemoverInfo">Strip excessive combining marks from incoming text.</string>
+    <string name="NugramRestrictedForward">Restricted Forwarding</string>
+    <string name="NugramRestrictedForwardInfo">Use custom resend logic for restricted forwards when available.</string>
+    <string name="NugramRestrictedForwardWorking">Forwarding messages…</string>
+    <string name="NugramRestrictedForwardFinished">%1$d messages sent</string>
+    <string name="NugramRestrictedForwardFinishedPartial">%1$d messages sent, %2$d skipped</string>
     <string name="AddAccount">Add Account</string>
     <string name="SwitchAccountHint">"Long tap to switch accounts"</string>
     <string name="SelectAccount">Select Account</string>

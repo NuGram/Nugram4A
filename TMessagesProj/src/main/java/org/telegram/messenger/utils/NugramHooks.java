@@ -7,10 +7,19 @@ import org.telegram.messenger.MessagesController;
 public class NugramHooks {
 
     public static final String PREF_ZALGO_REMOVER = "nugram_zalgo_remover";
+    public static final String PREF_RESTRICTED_FORWARD = "nugram_restricted_forward";
 
     public static boolean isZalgoRemoverEnabled() {
         try {
             return MessagesController.getGlobalMainSettings().getBoolean(PREF_ZALGO_REMOVER, false);
+        } catch (Throwable ignore) {
+            return false;
+        }
+    }
+
+    public static boolean isRestrictedForwardEnabled() {
+        try {
+            return MessagesController.getGlobalMainSettings().getBoolean(PREF_RESTRICTED_FORWARD, false);
         } catch (Throwable ignore) {
             return false;
         }

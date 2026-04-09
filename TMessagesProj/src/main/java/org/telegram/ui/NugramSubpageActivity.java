@@ -48,6 +48,7 @@ public class NugramSubpageActivity extends BaseFragment {
         if (titleResId == R.string.General) {
             SharedPreferences preferences = MessagesController.getGlobalMainSettings();
             boolean zalgoRemoverEnabled = preferences.getBoolean(NugramHooks.PREF_ZALGO_REMOVER, false);
+            boolean restrictedForwardEnabled = preferences.getBoolean(NugramHooks.PREF_RESTRICTED_FORWARD, false);
 
             LinearLayout layout = new LinearLayout(context);
             layout.setOrientation(LinearLayout.VERTICAL);
@@ -70,6 +71,19 @@ public class NugramSubpageActivity extends BaseFragment {
             TextInfoPrivacyCell infoCell = new TextInfoPrivacyCell(context);
             infoCell.setText(LocaleController.getString(R.string.NugramZalgoRemoverInfo));
             layout.addView(infoCell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+            TextCheckCell restrictedForwardCell = new TextCheckCell(context);
+            restrictedForwardCell.setTextAndCheck(LocaleController.getString(R.string.NugramRestrictedForward), restrictedForwardEnabled, false);
+            restrictedForwardCell.setOnClickListener(v -> {
+                boolean enabled = !preferences.getBoolean(NugramHooks.PREF_RESTRICTED_FORWARD, false);
+                preferences.edit().putBoolean(NugramHooks.PREF_RESTRICTED_FORWARD, enabled).apply();
+                ((TextCheckCell) v).setChecked(enabled);
+            });
+            layout.addView(restrictedForwardCell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+            TextInfoPrivacyCell restrictedForwardInfoCell = new TextInfoPrivacyCell(context);
+            restrictedForwardInfoCell.setText(LocaleController.getString(R.string.NugramRestrictedForwardInfo));
+            layout.addView(restrictedForwardInfoCell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
         } else {
             TextView emptyView = new TextView(context);
             emptyView.setText(LocaleController.getString(R.string.NugramComingSoon));

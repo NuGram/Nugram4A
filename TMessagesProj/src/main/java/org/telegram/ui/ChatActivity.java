@@ -11983,6 +11983,26 @@ public class ChatActivity extends BaseFragment implements
         return false;
     }
 
+    private boolean canUseNugramRestrictedForward(MessageObject messageObject) {
+        if (!NugramHooks.isRestrictedForwardEnabled() || messageObject == null || messageObject.messageOwner == null || chatMode == MODE_SCHEDULED) {
+            return false;
+        }
+        if (!(isPeerNoForwards() || messageObject.messageOwner.noforwards)) {
+            return false;
+        }
+        if (messageObject.isQuickReply()) {
+            return false;
+        }
+        if (messageObject.type == MessageObject.TYPE_GIFT_STARS || messageObject.type == MessageObject.TYPE_GIFT_THEME_UPDATE || messageObject.type == MessageObject.TYPE_SUGGEST_BIRTHDAY || messageObject.type == MessageObject.TYPE_GIFT_OFFER || messageObject.type == MessageObject.TYPE_SHARING_OFFER) {
+            return false;
+        }
+        return !(messageObject.messageOwner instanceof TLRPC.TL_message_secret)
+            && !messageObject.needDrawBluredPreview()
+            && !messageObject.isLiveLocation()
+            && messageObject.type != MessageObject.TYPE_PHONE_CALL
+            && !messageObject.isSponsored();
+    }
+
     private void share() {
         MessageObject msg = null;
         for (int a = 1; a >= 0; a--) {
@@ -12030,7 +12050,16 @@ public class ChatActivity extends BaseFragment implements
     }
 
     private void openForward(boolean fromActionBar) {
-        if (isPeerNoForwards() || hasSelectedNoforwardsMessage()) {
+        boolean nugramRestrictedForwardAllowed = false;
+        for (int a = 0; a < 2 && !nugramRestrictedForwardAllowed; a++) {
+            for (int b = 0; b < selectedMessagesIds[a].size(); b++) {
+                if (canUseNugramRestrictedForward(selectedMessagesIds[a].valueAt(b))) {
+                    nugramRestrictedForwardAllowed = true;
+                    break;
+                }
+            }
+        }
+        if ((isPeerNoForwards() || hasSelectedNoforwardsMessage()) && !nugramRestrictedForwardAllowed) {
             // We should update text if user changed locale without re-opening chat activity
             String str;
             if (isPeerNoForwards()) {
@@ -14184,6 +14213,21 @@ public class ChatActivity extends BaseFragment implements
             if (chatAdapter != null) {
                 chatAdapter.checkRemoveBotForumRowsStartThreadRow();
             }
+        }
+        if (NugramRestrictedForwarder.maybeForwardMessages(
+            this,
+            arrayList,
+            fromMyName,
+            hideCaption,
+            notify,
+            scheduleDate,
+            0,
+            getThreadMessage(),
+            payStars,
+            getSendMonoForumPeerId(),
+            getSendMessageSuggestionParams()
+        )) {
+            return;
         }
         int result = getSendMessagesHelper().sendMessage(arrayList, dialog_id, fromMyName, hideCaption, notify, scheduleDate, 0, getThreadMessage(), -1, payStars, getSendMonoForumPeerId(), getSendMessageSuggestionParams());
         AlertsCreator.showSendMediaAlert(result, this, themeDelegate);
@@ -18827,7 +18871,8 @@ public class ChatActivity extends BaseFragment implements
                         cantDeleteMessagesCount--;
                     }
                     boolean noforwards = isPeerNoForwards();
-                    if (chatMode == MODE_SCHEDULED || !messageObject.canForwardMessage() || noforwards) {
+                    boolean nugramRestrictedForward = canUseNugramRestrictedForward(messageObject);
+                    if (chatMode == MODE_SCHEDULED || (!messageObject.canForwardMessage() && !nugramRestrictedForward) || (noforwards && !nugramRestrictedForward)) {
                         cantForwardMessagesCount--;
                     } else {
                         canForwardMessagesCount--;
@@ -18864,7 +18909,8 @@ public class ChatActivity extends BaseFragment implements
                         cantDeleteMessagesCount++;
                     }
                     boolean noforwards = isPeerNoForwards();
-                    if (chatMode == MODE_SCHEDULED || !messageObject.canForwardMessage() || noforwards) {
+                    boolean nugramRestrictedForward = canUseNugramRestrictedForward(messageObject);
+                    if (chatMode == MODE_SCHEDULED || (!messageObject.canForwardMessage() && !nugramRestrictedForward) || (noforwards && !nugramRestrictedForward)) {
                         cantForwardMessagesCount++;
                     } else {
                         canForwardMessagesCount++;
@@ -33424,7 +33470,22 @@ public class ChatActivity extends BaseFragment implements
                         params.suggestionParams = messageSuggestionParams;
                         getSendMessagesHelper().sendMessage(params);
                     }
-                    getSendMessagesHelper().sendMessage(fmessages, did, false, false, notify, scheduleDate, scheduleRepeatPeriod, null, -1, price == null ? 0 : price, getSendMonoForumPeerId(), getSendMessageSuggestionParams());
+                    if (!NugramRestrictedForwarder.maybeForwardMessages(
+                        this,
+                        fmessages,
+                        false,
+                        false,
+                        notify,
+                        scheduleDate,
+                        scheduleRepeatPeriod,
+                        null,
+                        price == null ? 0 : price,
+                        getSendMonoForumPeerId(),
+                        getSendMessageSuggestionParams(),
+                        did
+                    )) {
+                        getSendMessagesHelper().sendMessage(fmessages, did, false, false, notify, scheduleDate, scheduleRepeatPeriod, null, -1, price == null ? 0 : price, getSendMonoForumPeerId(), getSendMessageSuggestionParams());
+                    }
                 }
                 fragment.finishFragment();
                 createUndoView();
@@ -44687,7 +44748,7 @@ public class ChatActivity extends BaseFragment implements
                     }
                 }
                 if (!selectedObject.isSponsored() && chatMode != MODE_QUICK_REPLIES && chatMode != MODE_SCHEDULED && (!selectedObject.needDrawBluredPreview() || selectedObject.hasExtendedMediaPreview()) &&
-                    !selectedObject.isLiveLocation() && selectedObject.type != MessageObject.TYPE_PHONE_CALL && !noforwards && selectedObject.type != MessageObject.TYPE_SHARING_OFFER &&
+                    !selectedObject.isLiveLocation() && selectedObject.type != MessageObject.TYPE_PHONE_CALL && (!noforwards || canUseNugramRestrictedForward(selectedObject)) && selectedObject.type != MessageObject.TYPE_SHARING_OFFER &&
                     selectedObject.type != MessageObject.TYPE_GIFT_PREMIUM && selectedObject.type != MessageObject.TYPE_GIFT_OFFER && selectedObject.type != MessageObject.TYPE_GIFT_OFFER_REJECTED && selectedObject.type != MessageObject.TYPE_GIFT_PREMIUM_CHANNEL && selectedObject.type != MessageObject.TYPE_SUGGEST_PHOTO && !selectedObject.isWallpaperAction()
                     && !message.isExpiredStory() && message.type != MessageObject.TYPE_STORY_MENTION && message.type != MessageObject.TYPE_GIFT_STARS) {
                     items.add(LocaleController.getString(R.string.Forward));
