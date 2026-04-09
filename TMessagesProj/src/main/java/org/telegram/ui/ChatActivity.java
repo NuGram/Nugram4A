@@ -191,6 +191,7 @@ import org.telegram.messenger.utils.OnPostDrawView;
 import org.telegram.messenger.utils.PhotoUtilities;
 import org.telegram.messenger.utils.RectFMergeBounding;
 import org.telegram.messenger.utils.ViewOutlineProviderImpl;
+import org.telegram.messenger.utils.NugramHooks;
 import org.telegram.messenger.utils.tlutils.TlUtils;
 import org.telegram.messenger.voip.VoIPService;
 import org.telegram.tgnet.ConnectionsManager;
@@ -488,6 +489,7 @@ public class ChatActivity extends BaseFragment implements
     private boolean requestClearSearchPages;
     private HashtagHistoryView hashtagHistoryView;
     private AlertDialog scheduleNowDialog;
+    private boolean lastNugramZalgoRemoverEnabled = NugramHooks.isZalgoRemoverEnabled();
 
     private HintView2 savedMessagesHint;
 	private HintView2 savedMessagesSearchHint;
@@ -22864,6 +22866,11 @@ public class ChatActivity extends BaseFragment implements
             if (ChatObject.isChannel(currentChat) || UserObject.isReplyUser(currentUser) || currentUser != null && currentUser.id == UserObject.VERIFY) {
                 updateBottomOverlay();
             }
+            boolean nugramZalgoRemoverEnabled = NugramHooks.isZalgoRemoverEnabled();
+            if (lastNugramZalgoRemoverEnabled != nugramZalgoRemoverEnabled) {
+                lastNugramZalgoRemoverEnabled = nugramZalgoRemoverEnabled;
+                refreshNugramZalgoMessages();
+            }
         } else if (id == NotificationCenter.replyMessagesDidLoad) {
             long did = (Long) args[0];
             if (did == dialog_id) {
@@ -33784,6 +33791,28 @@ public class ChatActivity extends BaseFragment implements
 
     public void updateVisibleRows() {
         updateVisibleRows(false);
+    }
+
+    private void refreshNugramZalgoMessages() {
+        for (int a = 0; a < messagesDict.length; a++) {
+            if (messagesDict[a] == null) {
+                continue;
+            }
+            for (int i = 0; i < messagesDict[a].size(); i++) {
+                MessageObject messageObject = messagesDict[a].valueAt(i);
+                if (messageObject != null) {
+                    messageObject.updateTranslation(true);
+                    messageObject.forceUpdate = true;
+                }
+            }
+        }
+        if (replyingMessageObject != null) {
+            replyingMessageObject.updateTranslation(true);
+        }
+        if (chatAdapter != null) {
+            chatAdapter.notifyDataSetChanged(false);
+        }
+        updateVisibleRows();
     }
 
     private void updateVisibleRows(boolean suppressUpdateMessageObject) {

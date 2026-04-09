@@ -50,6 +50,7 @@ import org.telegram.PhoneFormat.PhoneFormat;
 import org.telegram.messenger.browser.Browser;
 import org.telegram.messenger.ringtone.RingtoneDataStore;
 import org.telegram.messenger.utils.tlutils.AmountUtils;
+import org.telegram.messenger.utils.NugramHooks;
 import org.telegram.messenger.utils.tlutils.TlUtils;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.SerializedData;
@@ -1814,7 +1815,7 @@ public class MessageObject {
         currentAccount = accountNum;
         localName = name;
         localUserName = userName;
-        messageText = formattedMessage;
+        messageText = NugramHooks.maybeRemoveZalgo(formattedMessage);
         messageOwner = message;
         localChannel = isChannel;
         localSupergroup = supergroup;
@@ -3681,7 +3682,7 @@ public class MessageObject {
         if (isFromUser()) {
             fromUser = MessagesController.getInstance(currentAccount).getUser(messageOwner.from_id.user_id);
         }
-        messageText = AndroidUtilities.maybeRemoveZalgo(text);
+        messageText = NugramHooks.maybeRemoveZalgo(text);
         final ArrayList<TLRPC.MessageEntity> entities = getEntities();
         final TextPaint paint;
         if (getMedia(messageOwner) instanceof TLRPC.TL_messageMediaGame) {
@@ -5956,7 +5957,7 @@ public class MessageObject {
                 } else {
                     messageText = messageOwner.message;
                 }
-                messageText = AndroidUtilities.maybeRemoveZalgo(messageText);
+                messageText = NugramHooks.maybeRemoveZalgo(messageText);
             }
         }
 
@@ -7192,7 +7193,7 @@ public class MessageObject {
             captionSummarized = false;
             captionTranslated = false;
         }
-        text = AndroidUtilities.maybeRemoveZalgo(text);
+        text = NugramHooks.maybeRemoveZalgo(text);
         if (!isMediaEmpty() && !(getMedia(messageOwner) instanceof TLRPC.TL_messageMediaGame) && !TextUtils.isEmpty(text)) {
             caption = Emoji.replaceEmoji(text, Theme.chat_msgTextPaint.getFontMetricsInt(), false);
             caption = replaceAnimatedEmoji(caption, entities, Theme.chat_msgTextPaint.getFontMetricsInt(), false);

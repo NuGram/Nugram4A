@@ -9,7 +9,10 @@ import android.widget.TextView;
 
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessagesController;
+import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.R;
+import org.telegram.messenger.UserConfig;
+import org.telegram.messenger.utils.NugramHooks;
 import org.telegram.ui.ActionBar.ActionBar;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
@@ -18,8 +21,6 @@ import org.telegram.ui.Cells.TextInfoPrivacyCell;
 import org.telegram.ui.Components.LayoutHelper;
 
 public class NugramSubpageActivity extends BaseFragment {
-
-    private static final String PREF_ZALGO_REMOVER = "nugram_zalgo_remover";
 
     private final int titleResId;
 
@@ -46,7 +47,7 @@ public class NugramSubpageActivity extends BaseFragment {
 
         if (titleResId == R.string.General) {
             SharedPreferences preferences = MessagesController.getGlobalMainSettings();
-            boolean zalgoRemoverEnabled = preferences.getBoolean(PREF_ZALGO_REMOVER, false);
+            boolean zalgoRemoverEnabled = preferences.getBoolean(NugramHooks.PREF_ZALGO_REMOVER, false);
 
             LinearLayout layout = new LinearLayout(context);
             layout.setOrientation(LinearLayout.VERTICAL);
@@ -55,9 +56,14 @@ public class NugramSubpageActivity extends BaseFragment {
             TextCheckCell zalgoRemoverCell = new TextCheckCell(context);
             zalgoRemoverCell.setTextAndCheck(LocaleController.getString(R.string.NugramZalgoRemover), zalgoRemoverEnabled, false);
             zalgoRemoverCell.setOnClickListener(v -> {
-                boolean enabled = !preferences.getBoolean(PREF_ZALGO_REMOVER, false);
-                preferences.edit().putBoolean(PREF_ZALGO_REMOVER, enabled).apply();
+                boolean enabled = !preferences.getBoolean(NugramHooks.PREF_ZALGO_REMOVER, false);
+                preferences.edit().putBoolean(NugramHooks.PREF_ZALGO_REMOVER, enabled).apply();
                 ((TextCheckCell) v).setChecked(enabled);
+                for (int account = 0; account < UserConfig.MAX_ACCOUNT_COUNT; account++) {
+                    if (UserConfig.getInstance(account).isClientActivated()) {
+                        NotificationCenter.getInstance(account).postNotificationName(NotificationCenter.notificationsSettingsUpdated);
+                    }
+                }
             });
             layout.addView(zalgoRemoverCell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
 

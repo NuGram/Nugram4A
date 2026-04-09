@@ -343,21 +343,6 @@ public class AndroidUtilities {
         return matcher.replaceAll("$1");
     }
 
-    public static boolean isNugramZalgoRemoverEnabled() {
-        try {
-            return MessagesController.getGlobalMainSettings().getBoolean("nugram_zalgo_remover", false);
-        } catch (Throwable ignore) {
-            return false;
-        }
-    }
-
-    public static CharSequence maybeRemoveZalgo(CharSequence text) {
-        if (TextUtils.isEmpty(text) || !isNugramZalgoRemoverEnabled()) {
-            return text;
-        }
-        return removeDiacritics(text.toString());
-    }
-
     public static String removeRTL(String str) {
         if (str == null) return null;
         if (REMOVE_RTL == null) {
