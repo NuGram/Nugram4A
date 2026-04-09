@@ -2431,6 +2431,8 @@
     <string name="NugramZalgoRemoverInfo">Strip excessive combining marks from incoming text.</string>
     <string name="NugramRestrictedForward">Restricted Forwarding</string>
     <string name="NugramRestrictedForwardInfo">Use custom resend logic for restricted forwards when available.</string>
+    <string name="NugramGhostMode">Ghost Mode</string>
+    <string name="NugramGhostModeInfo">Hide read receipts, story views, online packets, and typing or upload progress while nudging your status back offline after revealing actions.</string>
     <string name="NugramRestrictedForwardWorking">Forwarding messages…</string>
     <string name="NugramRestrictedForwardFinished">%1$d messages sent</string>
     <string name="NugramRestrictedForwardFinishedPartial">%1$d messages sent, %2$d skipped</string>

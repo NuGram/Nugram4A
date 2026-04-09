@@ -25,6 +25,14 @@ public class NugramHooks {
         }
     }
 
+    public static boolean isGhostModeEnabled() {
+        try {
+            return NugramGhostMode.isGhostModeActive();
+        } catch (Throwable ignore) {
+            return false;
+        }
+    }
+
     public static CharSequence maybeRemoveZalgo(CharSequence text) {
         if (TextUtils.isEmpty(text) || !isZalgoRemoverEnabled()) {
             return text;

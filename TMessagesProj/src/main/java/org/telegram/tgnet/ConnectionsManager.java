@@ -44,6 +44,7 @@ import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.StatsController;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.Utilities;
+import org.telegram.messenger.utils.NugramGhostMode;
 import org.telegram.ui.Components.VideoPlayer;
 import org.telegram.ui.LoginActivity;
 
@@ -372,6 +373,27 @@ public class ConnectionsManager extends BaseController {
         if (BuildVars.LOGS_ENABLED) {
             FileLog.d("send request " + object + " with token = " + requestToken);
         }
+        if (NugramGhostMode.shouldDropTypingRequest(currentAccount, object)
+            || NugramGhostMode.shouldDropReadRequest(currentAccount, object)
+            || NugramGhostMode.shouldDropStoryReadRequest(object)) {
+            final RequestDelegate droppedOnComplete = onComplete;
+            final RequestDelegateTimestamp droppedOnCompleteTimestamp = onCompleteTimestamp;
+            Utilities.stageQueue.postRunnable(() -> {
+                if (droppedOnComplete != null) {
+                    droppedOnComplete.run(null, null);
+                } else if (droppedOnCompleteTimestamp != null) {
+                    droppedOnCompleteTimestamp.run(null, null, 0);
+                }
+            });
+            return;
+        }
+        if (NugramGhostMode.shouldRewritePresenceOffline(currentAccount, object)) {
+            NugramGhostMode.rewritePresenceOffline(object);
+        }
+        final boolean shouldMarkReadAfterAction = NugramGhostMode.shouldMarkReadAfterAction(object);
+        final boolean shouldScheduleOfflineAfterAction = NugramGhostMode.shouldScheduleOfflineAfterAction(object);
+        final long postActionDialogId = shouldMarkReadAfterAction ? NugramGhostMode.getActionDialogId(object) : 0;
+        final int postActionMessageId = shouldMarkReadAfterAction ? NugramGhostMode.getActionMessageId(object) : 0;
         try {
             NativeByteBuffer buffer = new NativeByteBuffer(object.getObjectSize());
             object.serializeToStream(buffer);
@@ -441,6 +463,14 @@ public class ConnectionsManager extends BaseController {
                         } else if (finalResponse instanceof TLRPC.Updates) {
                             KeepAliveJob.finishJob();
                             AccountInstance.getInstance(currentAccount).getMessagesController().processUpdates((TLRPC.Updates) finalResponse, false);
+                        }
+                        if (finalError == null) {
+                            if (shouldMarkReadAfterAction) {
+                                NugramGhostMode.markDialogReadAfterAction(currentAccount, postActionDialogId, postActionMessageId);
+                            }
+                            if (shouldScheduleOfflineAfterAction) {
+                                NugramGhostMode.scheduleOfflinePacket(currentAccount);
+                            }
                         }
                         if (finalResponse != null) {
                             finalResponse.freeResources();

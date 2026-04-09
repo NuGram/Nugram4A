@@ -49,6 +49,7 @@ public class NugramSubpageActivity extends BaseFragment {
             SharedPreferences preferences = MessagesController.getGlobalMainSettings();
             boolean zalgoRemoverEnabled = preferences.getBoolean(NugramHooks.PREF_ZALGO_REMOVER, false);
             boolean restrictedForwardEnabled = preferences.getBoolean(NugramHooks.PREF_RESTRICTED_FORWARD, false);
+            boolean ghostModeEnabled = NugramHooks.isGhostModeEnabled();
 
             LinearLayout layout = new LinearLayout(context);
             layout.setOrientation(LinearLayout.VERTICAL);
@@ -84,6 +85,19 @@ public class NugramSubpageActivity extends BaseFragment {
             TextInfoPrivacyCell restrictedForwardInfoCell = new TextInfoPrivacyCell(context);
             restrictedForwardInfoCell.setText(LocaleController.getString(R.string.NugramRestrictedForwardInfo));
             layout.addView(restrictedForwardInfoCell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+            TextCheckCell ghostModeCell = new TextCheckCell(context);
+            ghostModeCell.setTextAndCheck(LocaleController.getString(R.string.NugramGhostMode), ghostModeEnabled, false);
+            ghostModeCell.setOnClickListener(v -> {
+                boolean enabled = !NugramHooks.isGhostModeEnabled();
+                org.telegram.messenger.utils.NugramGhostMode.setGhostModeEnabled(enabled);
+                ((TextCheckCell) v).setChecked(NugramHooks.isGhostModeEnabled());
+            });
+            layout.addView(ghostModeCell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+            TextInfoPrivacyCell ghostModeInfoCell = new TextInfoPrivacyCell(context);
+            ghostModeInfoCell.setText(LocaleController.getString(R.string.NugramGhostModeInfo));
+            layout.addView(ghostModeInfoCell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
         } else {
             TextView emptyView = new TextView(context);
             emptyView.setText(LocaleController.getString(R.string.NugramComingSoon));
