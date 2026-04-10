@@ -83,6 +83,7 @@ import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.UserObject;
 import org.telegram.messenger.browser.Browser;
+import org.telegram.messenger.utils.NugramHooks;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.ActionBar;
@@ -527,11 +528,18 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         titleView.setText(UserObject.getUserName(user));
         final StringBuilder sb = new StringBuilder();
         if (user != null) {
-            sb.append(PhoneFormat.getInstance().format("+" + user.phone));
+            if (NugramHooks.isHidePhoneNumberEnabled()) {
+                sb.append(LocaleController.getString(R.string.PhoneHidden));
+            } else if (!TextUtils.isEmpty(user.phone)) {
+                sb.append(PhoneFormat.getInstance().format("+" + user.phone));
+            }
         }
         final String username = UserObject.getPublicUsername(user);
         if (username != null) {
-            sb.append(" • @").append(username);
+            if (sb.length() > 0) {
+                sb.append(" • ");
+            }
+            sb.append("@").append(username);
         }
         subtitleView.setText(sb);
 

@@ -9,6 +9,8 @@ public class NugramHooks {
     public static final String PREF_ZALGO_REMOVER = "nugram_zalgo_remover";
     public static final String PREF_RESTRICTED_FORWARD = "nugram_restricted_forward";
     public static final String PREF_DISABLE_NUMBER_ROUNDING = "nugram_disable_number_rounding";
+    public static final String PREF_TIME_WITH_SECONDS = "nugram_time_with_seconds";
+    public static final String PREF_HIDE_PHONE_NUMBER = "nugram_hide_phone_number";
 
     public static boolean isZalgoRemoverEnabled() {
         try {
@@ -37,6 +39,22 @@ public class NugramHooks {
     public static boolean isDisableNumberRoundingEnabled() {
         try {
             return MessagesController.getGlobalMainSettings().getBoolean(PREF_DISABLE_NUMBER_ROUNDING, false);
+        } catch (Throwable ignore) {
+            return false;
+        }
+    }
+
+    public static boolean isTimeWithSecondsEnabled() {
+        try {
+            return MessagesController.getGlobalMainSettings().getBoolean(PREF_TIME_WITH_SECONDS, false);
+        } catch (Throwable ignore) {
+            return false;
+        }
+    }
+
+    public static boolean isHidePhoneNumberEnabled() {
+        try {
+            return MessagesController.getGlobalMainSettings().getBoolean(PREF_HIDE_PHONE_NUMBER, false);
         } catch (Throwable ignore) {
             return false;
         }

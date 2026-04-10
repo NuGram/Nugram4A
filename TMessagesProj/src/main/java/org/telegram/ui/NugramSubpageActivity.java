@@ -101,6 +101,8 @@ public class NugramSubpageActivity extends BaseFragment {
         } else if (titleResId == R.string.Appearance) {
             SharedPreferences preferences = MessagesController.getGlobalMainSettings();
             boolean disableNumberRoundingEnabled = preferences.getBoolean(NugramHooks.PREF_DISABLE_NUMBER_ROUNDING, false);
+            boolean timeWithSecondsEnabled = preferences.getBoolean(NugramHooks.PREF_TIME_WITH_SECONDS, false);
+            boolean hidePhoneNumberEnabled = preferences.getBoolean(NugramHooks.PREF_HIDE_PHONE_NUMBER, false);
 
             LinearLayout layout = new LinearLayout(context);
             layout.setOrientation(LinearLayout.VERTICAL);
@@ -123,6 +125,42 @@ public class NugramSubpageActivity extends BaseFragment {
             TextInfoPrivacyCell disableNumberRoundingInfoCell = new TextInfoPrivacyCell(context);
             disableNumberRoundingInfoCell.setText(LocaleController.getString(R.string.NugramDisableNumberRoundingInfo));
             layout.addView(disableNumberRoundingInfoCell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+            TextCheckCell timeWithSecondsCell = new TextCheckCell(context);
+            timeWithSecondsCell.setTextAndCheck(LocaleController.getString(R.string.NugramTimeWithSeconds), timeWithSecondsEnabled, false);
+            timeWithSecondsCell.setOnClickListener(v -> {
+                boolean enabled = !preferences.getBoolean(NugramHooks.PREF_TIME_WITH_SECONDS, false);
+                preferences.edit().putBoolean(NugramHooks.PREF_TIME_WITH_SECONDS, enabled).apply();
+                ((TextCheckCell) v).setChecked(enabled);
+                for (int account = 0; account < UserConfig.MAX_ACCOUNT_COUNT; account++) {
+                    if (UserConfig.getInstance(account).isClientActivated()) {
+                        NotificationCenter.getInstance(account).postNotificationName(NotificationCenter.notificationsSettingsUpdated);
+                    }
+                }
+            });
+            layout.addView(timeWithSecondsCell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+            TextInfoPrivacyCell timeWithSecondsInfoCell = new TextInfoPrivacyCell(context);
+            timeWithSecondsInfoCell.setText(LocaleController.getString(R.string.NugramTimeWithSecondsInfo));
+            layout.addView(timeWithSecondsInfoCell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+            TextCheckCell hidePhoneNumberCell = new TextCheckCell(context);
+            hidePhoneNumberCell.setTextAndCheck(LocaleController.getString(R.string.NugramHidePhoneNumber), hidePhoneNumberEnabled, false);
+            hidePhoneNumberCell.setOnClickListener(v -> {
+                boolean enabled = !preferences.getBoolean(NugramHooks.PREF_HIDE_PHONE_NUMBER, false);
+                preferences.edit().putBoolean(NugramHooks.PREF_HIDE_PHONE_NUMBER, enabled).apply();
+                ((TextCheckCell) v).setChecked(enabled);
+                for (int account = 0; account < UserConfig.MAX_ACCOUNT_COUNT; account++) {
+                    if (UserConfig.getInstance(account).isClientActivated()) {
+                        NotificationCenter.getInstance(account).postNotificationName(NotificationCenter.notificationsSettingsUpdated);
+                    }
+                }
+            });
+            layout.addView(hidePhoneNumberCell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+            TextInfoPrivacyCell hidePhoneNumberInfoCell = new TextInfoPrivacyCell(context);
+            hidePhoneNumberInfoCell.setText(LocaleController.getString(R.string.NugramHidePhoneNumberInfo));
+            layout.addView(hidePhoneNumberInfoCell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
         } else {
             TextView emptyView = new TextView(context);
             emptyView.setText(LocaleController.getString(R.string.NugramComingSoon));

@@ -2435,6 +2435,10 @@
     <string name="NugramGhostModeInfo">Hide read receipts, story views, online packets, and typing or upload progress while nudging your status back offline after revealing actions.</string>
     <string name="NugramDisableNumberRounding">Disable Number Rounding</string>
     <string name="NugramDisableNumberRoundingInfo">Show full values like 12.345 instead of shortened values like 12.3K in reactions, counters, views, and similar places.</string>
+    <string name="NugramTimeWithSeconds">Time With Seconds</string>
+    <string name="NugramTimeWithSecondsInfo">Show seconds in time labels that use the shared app time formatter.</string>
+    <string name="NugramHidePhoneNumber">Hide Phone Number</string>
+    <string name="NugramHidePhoneNumberInfo">Hide phone numbers in the settings header and profile pages.</string>
     <string name="NugramRestrictedForwardWorking">Forwarding messages…</string>
     <string name="NugramRestrictedForwardFinished">%1$d messages sent</string>
     <string name="NugramRestrictedForwardFinishedPartial">%1$d messages sent, %2$d skipped</string>
