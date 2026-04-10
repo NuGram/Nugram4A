@@ -8,6 +8,7 @@ public class NugramHooks {
 
     public static final String PREF_ZALGO_REMOVER = "nugram_zalgo_remover";
     public static final String PREF_RESTRICTED_FORWARD = "nugram_restricted_forward";
+    public static final String PREF_DISABLE_NUMBER_ROUNDING = "nugram_disable_number_rounding";
 
     public static boolean isZalgoRemoverEnabled() {
         try {
@@ -28,6 +29,14 @@ public class NugramHooks {
     public static boolean isGhostModeEnabled() {
         try {
             return NugramGhostMode.isGhostModeActive();
+        } catch (Throwable ignore) {
+            return false;
+        }
+    }
+
+    public static boolean isDisableNumberRoundingEnabled() {
+        try {
+            return MessagesController.getGlobalMainSettings().getBoolean(PREF_DISABLE_NUMBER_ROUNDING, false);
         } catch (Throwable ignore) {
             return false;
         }

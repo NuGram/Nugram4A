@@ -98,6 +98,31 @@ public class NugramSubpageActivity extends BaseFragment {
             TextInfoPrivacyCell ghostModeInfoCell = new TextInfoPrivacyCell(context);
             ghostModeInfoCell.setText(LocaleController.getString(R.string.NugramGhostModeInfo));
             layout.addView(ghostModeInfoCell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+        } else if (titleResId == R.string.Appearance) {
+            SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+            boolean disableNumberRoundingEnabled = preferences.getBoolean(NugramHooks.PREF_DISABLE_NUMBER_ROUNDING, false);
+
+            LinearLayout layout = new LinearLayout(context);
+            layout.setOrientation(LinearLayout.VERTICAL);
+            contentView.addView(layout, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+            TextCheckCell disableNumberRoundingCell = new TextCheckCell(context);
+            disableNumberRoundingCell.setTextAndCheck(LocaleController.getString(R.string.NugramDisableNumberRounding), disableNumberRoundingEnabled, false);
+            disableNumberRoundingCell.setOnClickListener(v -> {
+                boolean enabled = !preferences.getBoolean(NugramHooks.PREF_DISABLE_NUMBER_ROUNDING, false);
+                preferences.edit().putBoolean(NugramHooks.PREF_DISABLE_NUMBER_ROUNDING, enabled).apply();
+                ((TextCheckCell) v).setChecked(enabled);
+                for (int account = 0; account < UserConfig.MAX_ACCOUNT_COUNT; account++) {
+                    if (UserConfig.getInstance(account).isClientActivated()) {
+                        NotificationCenter.getInstance(account).postNotificationName(NotificationCenter.notificationsSettingsUpdated);
+                    }
+                }
+            });
+            layout.addView(disableNumberRoundingCell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+            TextInfoPrivacyCell disableNumberRoundingInfoCell = new TextInfoPrivacyCell(context);
+            disableNumberRoundingInfoCell.setText(LocaleController.getString(R.string.NugramDisableNumberRoundingInfo));
+            layout.addView(disableNumberRoundingInfoCell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
         } else {
             TextView emptyView = new TextView(context);
             emptyView.setText(LocaleController.getString(R.string.NugramComingSoon));

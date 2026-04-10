@@ -34,6 +34,7 @@ import androidx.annotation.RequiresApi;
 import androidx.annotation.StringRes;
 
 import org.telegram.messenger.time.FastDateFormat;
+import org.telegram.messenger.utils.NugramHooks;
 import org.telegram.tgnet.Vector;
 import org.telegram.ui.Components.TypefaceSpan;
 import org.telegram.ui.Stars.StarsController;
@@ -1596,10 +1597,7 @@ public class LocaleController {
             }
             String param = getInstance().stringForQuantity(getInstance().currentPluralRules.quantityForNumber(plural));
             param = key + "_" + param;
-            StringBuilder stringBuilder = new StringBuilder(String.format("%d", plural));
-            for (int a = stringBuilder.length() - 3; a > 0; a -= 3) {
-                stringBuilder.insert(a, symbol);
-            }
+            StringBuilder stringBuilder = new StringBuilder(formatNumber(plural, NugramHooks.isDisableNumberRoundingEnabled() ? '.' : symbol));
 
             String value = BuildVars.USE_CLOUD_STRINGS ? getInstance().localeValues.get(param) : null;
             if (value == null) {
@@ -1646,6 +1644,9 @@ public class LocaleController {
     }
 
     public static String formatNumberWithMillion(long count, char symbol) {
+        if (NugramHooks.isDisableNumberRoundingEnabled()) {
+            return formatNumber(count, '.');
+        }
         if (count < 1_000_000) {
             return formatNumber(count, symbol);
         }
@@ -2914,6 +2915,12 @@ public class LocaleController {
     }
 
     public static String formatShortNumber(int number, int[] rounded) {
+        if (NugramHooks.isDisableNumberRoundingEnabled()) {
+            if (rounded != null) {
+                rounded[0] = number;
+            }
+            return formatNumber(number, '.');
+        }
         StringBuilder K = new StringBuilder();
         int lastDec = 0;
         int KCount = 0;

@@ -153,6 +153,7 @@ import org.telegram.PhoneFormat.PhoneFormat;
 import org.telegram.messenger.browser.Browser;
 import org.telegram.messenger.utils.CustomHtml;
 import org.telegram.messenger.utils.DebugRecordingCanvas;
+import org.telegram.messenger.utils.NugramHooks;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLObject;
 import org.telegram.tgnet.TLRPC;
@@ -4068,6 +4069,9 @@ public class AndroidUtilities {
     public static String formatWholeNumber(int v, int dif) {
         if (v == 0) {
             return "0";
+        }
+        if (NugramHooks.isDisableNumberRoundingEnabled()) {
+            return LocaleController.formatNumber(v, '.');
         }
         float num_ = v;
         int count = 0;
