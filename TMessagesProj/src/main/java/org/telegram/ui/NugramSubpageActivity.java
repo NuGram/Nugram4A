@@ -49,6 +49,9 @@ public class NugramSubpageActivity extends BaseFragment {
             SharedPreferences preferences = MessagesController.getGlobalMainSettings();
             boolean zalgoRemoverEnabled = preferences.getBoolean(NugramHooks.PREF_ZALGO_REMOVER, false);
             boolean restrictedForwardEnabled = preferences.getBoolean(NugramHooks.PREF_RESTRICTED_FORWARD, false);
+            boolean unlimitedPinsEnabled = NugramHooks.isUnlimitedPinsEnabled();
+            boolean unlimitedFoldersEnabled = NugramHooks.isUnlimitedFoldersEnabled();
+            boolean unlimitedLoginsEnabled = NugramHooks.isUnlimitedLoginsEnabled();
             boolean ghostModeEnabled = NugramHooks.isGhostModeEnabled();
 
             LinearLayout layout = new LinearLayout(context);
@@ -85,6 +88,58 @@ public class NugramSubpageActivity extends BaseFragment {
             TextInfoPrivacyCell restrictedForwardInfoCell = new TextInfoPrivacyCell(context);
             restrictedForwardInfoCell.setText(LocaleController.getString(R.string.NugramRestrictedForwardInfo));
             layout.addView(restrictedForwardInfoCell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+            TextCheckCell unlimitedPinsCell = new TextCheckCell(context);
+            unlimitedPinsCell.setTextAndCheck(LocaleController.getString(R.string.NugramUnlimitedPins), unlimitedPinsEnabled, false);
+            unlimitedPinsCell.setOnClickListener(v -> {
+                boolean enabled = !NugramHooks.isUnlimitedPinsEnabled();
+                preferences.edit().putBoolean(NugramHooks.PREF_UNLIMITED_PINS, enabled).apply();
+                ((TextCheckCell) v).setChecked(enabled);
+                for (int account = 0; account < UserConfig.MAX_ACCOUNT_COUNT; account++) {
+                    if (UserConfig.getInstance(account).isClientActivated()) {
+                        NotificationCenter.getInstance(account).postNotificationName(NotificationCenter.dialogsNeedReload);
+                        NotificationCenter.getInstance(account).postNotificationName(NotificationCenter.notificationsSettingsUpdated);
+                    }
+                }
+            });
+            layout.addView(unlimitedPinsCell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+            TextInfoPrivacyCell unlimitedPinsInfoCell = new TextInfoPrivacyCell(context);
+            unlimitedPinsInfoCell.setText(LocaleController.getString(R.string.NugramUnlimitedPinsInfo));
+            layout.addView(unlimitedPinsInfoCell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+            TextCheckCell unlimitedFoldersCell = new TextCheckCell(context);
+            unlimitedFoldersCell.setTextAndCheck(LocaleController.getString(R.string.NugramUnlimitedFolders), unlimitedFoldersEnabled, false);
+            unlimitedFoldersCell.setOnClickListener(v -> {
+                boolean enabled = !NugramHooks.isUnlimitedFoldersEnabled();
+                preferences.edit().putBoolean(NugramHooks.PREF_UNLIMITED_FOLDERS, enabled).apply();
+                ((TextCheckCell) v).setChecked(enabled);
+                for (int account = 0; account < UserConfig.MAX_ACCOUNT_COUNT; account++) {
+                    if (UserConfig.getInstance(account).isClientActivated()) {
+                        NotificationCenter.getInstance(account).postNotificationName(NotificationCenter.dialogFiltersUpdated);
+                        NotificationCenter.getInstance(account).postNotificationName(NotificationCenter.notificationsSettingsUpdated);
+                    }
+                }
+            });
+            layout.addView(unlimitedFoldersCell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+            TextInfoPrivacyCell unlimitedFoldersInfoCell = new TextInfoPrivacyCell(context);
+            unlimitedFoldersInfoCell.setText(LocaleController.getString(R.string.NugramUnlimitedFoldersInfo));
+            layout.addView(unlimitedFoldersInfoCell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+            TextCheckCell unlimitedLoginsCell = new TextCheckCell(context);
+            unlimitedLoginsCell.setTextAndCheck(LocaleController.getString(R.string.NugramUnlimitedLogins), unlimitedLoginsEnabled, false);
+            unlimitedLoginsCell.setOnClickListener(v -> {
+                boolean enabled = !NugramHooks.isUnlimitedLoginsEnabled();
+                preferences.edit().putBoolean(NugramHooks.PREF_UNLIMITED_LOGINS, enabled).apply();
+                ((TextCheckCell) v).setChecked(enabled);
+                NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.notificationsSettingsUpdated);
+            });
+            layout.addView(unlimitedLoginsCell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+            TextInfoPrivacyCell unlimitedLoginsInfoCell = new TextInfoPrivacyCell(context);
+            unlimitedLoginsInfoCell.setText(LocaleController.getString(R.string.NugramUnlimitedLoginsInfo));
+            layout.addView(unlimitedLoginsInfoCell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
 
             TextCheckCell ghostModeCell = new TextCheckCell(context);
             ghostModeCell.setTextAndCheck(LocaleController.getString(R.string.NugramGhostMode), ghostModeEnabled, false);

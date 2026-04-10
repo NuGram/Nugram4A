@@ -2431,6 +2431,12 @@
     <string name="NugramZalgoRemoverInfo">Strip excessive combining marks from incoming text.</string>
     <string name="NugramRestrictedForward">Restricted Forwarding</string>
     <string name="NugramRestrictedForwardInfo">Use custom resend logic for restricted forwards when available.</string>
+    <string name="NugramUnlimitedPins">Unlimited Pins</string>
+    <string name="NugramUnlimitedPinsInfo">Keep extra pinned chats locally on this device above Telegram normal limits.</string>
+    <string name="NugramUnlimitedFolders">Unlimited Folders</string>
+    <string name="NugramUnlimitedFoldersInfo">Keep extra folders and folder colors locally on this device. Changes above Telegram normal limits may not sync to the server.</string>
+    <string name="NugramUnlimitedLogins">Unlimited Logins</string>
+    <string name="NugramUnlimitedLoginsInfo">Unlock the app built in extra account slot. Enabled by default and still limited by the app hard account cap.</string>
     <string name="NugramGhostMode">Ghost Mode</string>
     <string name="NugramGhostModeInfo">Hide read receipts, story views, online packets, and typing or upload progress while nudging your status back offline after revealing actions.</string>
     <string name="NugramDisableNumberRounding">Disable Number Rounding</string>

@@ -56,6 +56,7 @@ import org.telegram.SQLite.SQLiteDatabase;
 import org.telegram.SQLite.SQLiteException;
 import org.telegram.SQLite.SQLitePreparedStatement;
 import org.telegram.messenger.browser.Browser;
+import org.telegram.messenger.utils.NugramHooks;
 import org.telegram.messenger.support.LongSparseIntArray;
 import org.telegram.messenger.support.LongSparseLongArray;
 import org.telegram.messenger.voip.GroupCallMessagesController;
@@ -841,6 +842,15 @@ public class MessagesController extends BaseController implements NotificationCe
         if (dialogFilters.isEmpty()) {
             return;
         }
+        if (NugramHooks.isUnlimitedFoldersEnabled()) {
+            for (int i = 0; i < dialogFilters.size(); i++) {
+                dialogFilters.get(i).locked = false;
+            }
+            getMessagesStorage().saveDialogFiltersOrder();
+            getNotificationCenter().postNotificationName(NotificationCenter.dialogFiltersUpdated);
+            getStoriesController().onPremiumChanged();
+            return;
+        }
         if (!premium) {
             if (!dialogFilters.get(0).isDefault()) {
                 for (int i = 1; i < dialogFilters.size(); i++) {
@@ -864,6 +874,19 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public void lockFiltersInternal() {
+        if (NugramHooks.isUnlimitedFoldersEnabled()) {
+            boolean changed = false;
+            for (int i = 0; i < dialogFilters.size(); i++) {
+                if (dialogFilters.get(i).locked) {
+                    dialogFilters.get(i).locked = false;
+                    changed = true;
+                }
+            }
+            if (changed) {
+                getNotificationCenter().postNotificationName(NotificationCenter.dialogFiltersUpdated);
+            }
+            return;
+        }
         boolean changed = false;
         if (!getUserConfig().isPremium() && dialogFilters.size() - 1 > dialogFiltersLimitDefault) {
             int n = dialogFilters.size() - 1 - dialogFiltersLimitDefault;
@@ -16473,6 +16496,9 @@ public class MessagesController extends BaseController implements NotificationCe
                 }
             }
             getMessagesStorage().setDialogsPinned(dids, pinned);
+            if (NugramHooks.isUnlimitedPinsEnabled()) {
+                NugramHooks.saveLocalPinnedDialogs(currentAccount, folderId, dids);
+            }
 
             NativeByteBuffer data = null;
             try {
@@ -16570,6 +16596,9 @@ public class MessagesController extends BaseController implements NotificationCe
             }
         }
         getMessagesStorage().setDialogPinned(dialogId, dialog.pinnedNum);
+        if (NugramHooks.isUnlimitedPinsEnabled()) {
+            saveCurrentPinnedDialogsLocally(folderId);
+        }
         return true;
     }
 
@@ -16768,11 +16797,74 @@ public class MessagesController extends BaseController implements NotificationCe
                     }
                     getMessagesStorage().unpinAllDialogsExceptNew(pinnedDialogs, folderId);
                     getMessagesStorage().putDialogs(toCache, 1);
+                    if (NugramHooks.isUnlimitedPinsEnabled()) {
+                        applyLocalPinnedDialogs(folderId);
+                    }
                     getUserConfig().setPinnedDialogsLoaded(folderId, true);
                     getUserConfig().saveConfig(false);
                 }));
             }
         });
+    }
+
+    private void saveCurrentPinnedDialogsLocally(int folderId) {
+        ArrayList<Long> dialogIds = new ArrayList<>();
+        ArrayList<TLRPC.Dialog> dialogs = getDialogs(folderId);
+        for (int a = 0, N = dialogs.size(); a < N; a++) {
+            TLRPC.Dialog dialog = dialogs.get(a);
+            if (dialog instanceof TLRPC.TL_dialogFolder) {
+                continue;
+            }
+            if (!dialog.pinned) {
+                if (dialog.id != promoDialogId) {
+                    break;
+                }
+                continue;
+            }
+            dialogIds.add(dialog.id);
+        }
+        NugramHooks.saveLocalPinnedDialogs(currentAccount, folderId, dialogIds);
+    }
+
+    private void applyLocalPinnedDialogs(int folderId) {
+        ArrayList<Long> localPinned = NugramHooks.getLocalPinnedDialogs(currentAccount, folderId);
+        if (localPinned.isEmpty()) {
+            return;
+        }
+        ArrayList<TLRPC.Dialog> dialogs = getDialogs(folderId);
+        if (dialogs == null || dialogs.isEmpty()) {
+            return;
+        }
+
+        ArrayList<Long> dids = new ArrayList<>();
+        ArrayList<Integer> pinned = new ArrayList<>();
+        for (int a = 0, N = dialogs.size(); a < N; a++) {
+            TLRPC.Dialog dialog = dialogs.get(a);
+            if (dialog instanceof TLRPC.TL_dialogFolder) {
+                continue;
+            }
+            dialog.pinned = false;
+            dialog.pinnedNum = 0;
+        }
+
+        int total = localPinned.size();
+        for (int a = 0; a < total; a++) {
+            long dialogId = localPinned.get(a);
+            TLRPC.Dialog dialog = dialogs_dict.get(dialogId);
+            if (dialog == null || dialog.folder_id != folderId) {
+                continue;
+            }
+            dialog.pinned = true;
+            dialog.pinnedNum = total - a;
+            dids.add(dialogId);
+            pinned.add(dialog.pinnedNum);
+        }
+
+        if (!dids.isEmpty()) {
+            getMessagesStorage().setDialogsPinned(dids, pinned);
+            sortDialogs(null);
+            getNotificationCenter().postNotificationName(NotificationCenter.dialogsNeedReload);
+        }
     }
 
     public void generateJoinMessage(long chatId, boolean ignoreLeft) {

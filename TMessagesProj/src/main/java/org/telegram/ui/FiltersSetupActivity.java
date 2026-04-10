@@ -39,6 +39,7 @@ import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.R;
 import org.telegram.messenger.UserConfig;
+import org.telegram.messenger.utils.NugramHooks;
 import org.telegram.messenger.Utilities;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.ActionBar;
@@ -579,14 +580,14 @@ public class FiltersSetupActivity extends BaseFragment implements NotificationCe
         } else {
             filtersSectionStart = filtersSectionEnd = -1;
         }
-        if (dialogFilters.size() < getMessagesController().dialogFiltersLimitPremium) {
+        if (NugramHooks.isUnlimitedFoldersEnabled() || dialogFilters.size() < getMessagesController().dialogFiltersLimitPremium) {
             items.add(ItemInner.asButton(LocaleController.getString(R.string.CreateNewFilter)));
         }
         items.add(ItemInner.asShadow(null));
         folderTagsPosition = items.size();
         showTagsRow = items.size();
         items.add(ItemInner.asCheck(LocaleController.getString(R.string.FolderShowTags)));
-        items.add(ItemInner.asShadow(!getUserConfig().isPremium() ? AndroidUtilities.replaceSingleTag(LocaleController.getString(R.string.FolderShowTagsInfoPremium), Theme.key_windowBackgroundWhiteBlueHeader, AndroidUtilities.REPLACING_TAG_TYPE_LINKBOLD, () -> {
+        items.add(ItemInner.asShadow(!NugramHooks.canUseLocalFolderColors(getUserConfig().isPremium()) ? AndroidUtilities.replaceSingleTag(LocaleController.getString(R.string.FolderShowTagsInfoPremium), Theme.key_windowBackgroundWhiteBlueHeader, AndroidUtilities.REPLACING_TAG_TYPE_LINKBOLD, () -> {
             presentFragment(new PremiumPreviewFragment("settings"));
         }) : LocaleController.getString(R.string.FolderShowTagsInfo)));
 
@@ -672,20 +673,23 @@ public class FiltersSetupActivity extends BaseFragment implements NotificationCe
                 return;
             }
             if (item.viewType == VIEW_TYPE_CHECK) {
-                if (!getUserConfig().isPremium()) {
+                if (!NugramHooks.canUseLocalFolderColors(getUserConfig().isPremium())) {
                     showDialog(new PremiumFeatureBottomSheet(this, PremiumPreviewFragment.PREMIUM_FEATURE_FOLDER_TAGS, true));
                     return;
                 }
+                boolean localOnly = !getUserConfig().isPremium() && NugramHooks.isUnlimitedFoldersEnabled();
                 TLRPC.TL_messages_toggleDialogFilterTags req = new TLRPC.TL_messages_toggleDialogFilterTags();
                 req.enabled = !getMessagesController().folderTags;
                 getMessagesController().setFolderTags(req.enabled);
-                getConnectionsManager().sendRequest(req, (res, err) -> AndroidUtilities.runOnUIThread(() -> {
-                    if (req.enabled && !loadedColors) {
-                        loadingFiltersForColors = true;
-                        getMessagesController().loadRemoteFilters(true);
-                        loadedColors = true;
-                    }
-                }));
+                if (!localOnly) {
+                    getConnectionsManager().sendRequest(req, (res, err) -> AndroidUtilities.runOnUIThread(() -> {
+                        if (req.enabled && !loadedColors) {
+                            loadingFiltersForColors = true;
+                            getMessagesController().loadRemoteFilters(true);
+                            loadedColors = true;
+                        }
+                    }));
+                }
                 ((TextCheckCell) view).setChecked(getMessagesController().folderTags);
                 adapter.notifyItemRangeChanged(filtersSectionStart, filtersSectionEnd - filtersSectionStart);
             } else if (item.viewType == VIEW_TYPE_FILTER) {
@@ -718,8 +722,10 @@ public class FiltersSetupActivity extends BaseFragment implements NotificationCe
     public void createFolder(INavigationLayout navigationLayout) {
         final int count = getMessagesController().getDialogFilters().size();
         if (
-            count - 1 >= getMessagesController().dialogFiltersLimitDefault && !getUserConfig().isPremium() ||
-            count >= getMessagesController().dialogFiltersLimitPremium
+            !NugramHooks.isUnlimitedFoldersEnabled() && (
+                count - 1 >= getMessagesController().dialogFiltersLimitDefault && !getUserConfig().isPremium() ||
+                count >= getMessagesController().dialogFiltersLimitPremium
+            )
         ) {
             showDialog(new LimitReachedBottomSheet(this, getContext(), LimitReachedBottomSheet.TYPE_FOLDERS, currentAccount, null));
         } else if (navigationLayout != null) {

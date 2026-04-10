@@ -18,6 +18,7 @@ import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.SerializedData;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.tgnet.tl.TL_account;
+import org.telegram.messenger.utils.NugramHooks;
 
 import java.util.Arrays;
 
@@ -121,6 +122,9 @@ public class UserConfig extends BaseController {
     }
 
     public static int getMaxAccountCount() {
+        if (NugramHooks.isUnlimitedLoginsEnabled()) {
+            return MAX_ACCOUNT_COUNT;
+        }
         return hasPremiumOnAccounts() ? 5 : 3;
     }
 

@@ -526,20 +526,22 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         avatarDrawable.setInfo(user);
         avatarView.setForUserOrChat(user, avatarDrawable);
         titleView.setText(UserObject.getUserName(user));
+        final String username = UserObject.getPublicUsername(user);
         final StringBuilder sb = new StringBuilder();
-        if (user != null) {
-            if (NugramHooks.isHidePhoneNumberEnabled()) {
-                sb.append(LocaleController.getString(R.string.PhoneHidden));
-            } else if (!TextUtils.isEmpty(user.phone)) {
+        if (NugramHooks.isHidePhoneNumberEnabled()) {
+            if (!TextUtils.isEmpty(username)) {
+                sb.append("@").append(username);
+            }
+        } else {
+            if (user != null && !TextUtils.isEmpty(user.phone)) {
                 sb.append(PhoneFormat.getInstance().format("+" + user.phone));
             }
-        }
-        final String username = UserObject.getPublicUsername(user);
-        if (username != null) {
-            if (sb.length() > 0) {
-                sb.append(" • ");
+            if (!TextUtils.isEmpty(username)) {
+                if (sb.length() > 0) {
+                    sb.append(" • ");
+                }
+                sb.append("@").append(username);
             }
-            sb.append("@").append(username);
         }
         subtitleView.setText(sb);
 
